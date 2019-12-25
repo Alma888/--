@@ -1,0 +1,61 @@
+# --
+
+//服务器=============================================================================================
+
+package udp.echo;
+
+import java.io.IOException;
+import java.net.*;
+//UDP不是面向连接的，是面向数据报的，接收到的是一段一段的
+public class Server {
+    public static void main(String[] args) throws IOException {
+        //1.新建一个 DatagramSocket
+        DatagramSocket udpServerSocket=new DatagramSocket(9898);
+        byte[] receiveBuffer=new byte[1024];
+        DatagramPacket receivePacket=new DatagramPacket(receiveBuffer,receiveBuffer.length);
+        //2.等待客户端来撩
+        udpServerSocket.receive(receivePacket);
+        InetAddress clientAddress=receivePacket.getAddress();
+        System.out.printf("我从 %s:%d 收到了消息%n",clientAddress.getHostAddress(),receivePacket.getPort());
+        System.out.printf("我一共收到了 %d 字节的数据%n",receivePacket.getLength());
+
+       String message=new String(
+               receivePacket.getData(),
+               0,
+               receivePacket.getLength(),
+               "UTF-8");
+        System.out.println(message);
+        udpServerSocket.close();
+    }
+}
+
+
+//客户端=============================================================================================
+
+package udp.echo;
+
+import java.io.IOException;
+import java.net.*;
+
+public class Client {
+    public static void main(String[] args) throws IOException {
+        DatagramSocket udpClientSocket=new DatagramSocket();
+        String message="收到我的消息没？";
+        byte[] sendBuffer=message.getBytes("UTF-8");
+        //127.0.0.1
+        byte[] serverIP=new byte[4];
+        serverIP[0]=127;
+        serverIP[1]=0;
+        serverIP[2]=0;
+        serverIP[3]=1;
+        InetAddress serverAddress= InetAddress.getByAddress(serverIP);
+        DatagramPacket sendPacket=new DatagramPacket(
+                sendBuffer,
+                sendBuffer.length,
+                serverAddress,//IP地址
+                9898
+        );
+        udpClientSocket.send(sendPacket);
+        udpClientSocket.close();
+     }
+}
